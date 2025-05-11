@@ -1,0 +1,311 @@
+# Day 1 explores following concepts
+struct  --  Organize each contact as a data unit
+std::vector -- Store an expandable list of contacts
+auto -- Infer types automatically
+for(auto& x : vec) -- Modern Looping
+cin / cout -- Basic I/O
+RAII -- Resources (like memory) are managed by design - no leaks
+
+# Project ContactBook code sinppet breakdown
+
+## 🔹 `#include <iostream>`
+
+* `#include`: Preprocessor directive that **inserts** the code from another file before compiling.
+* `<iostream>`: Stands for **Input/Output Stream**. It gives access to:
+
+  * `std::cout` → print to terminal
+  * `std::cin` → read input from user
+
+💡 *This allows the code to interact with the user via terminal.*
+
+---
+
+## 🔹 `#include <vector>`
+
+* Gives access to the **`std::vector`** class.
+* `std::vector` is a **dynamic array** that grows as needed.
+
+💡 *It's a C++ standard library container that handles memory.*
+
+---
+
+## 🔹 `#include <string>`
+
+* Gives access to `std::string` – C++'s string class.
+* A `std::string`:
+
+  * Manages memory dynamically
+  * Stores characters in a heap buffer
+  * Provides operations like `.size()`, `.append()`, etc.
+
+---
+
+## 🔹 Struct Definition
+
+```cpp
+struct Contact {
+    std::string name;
+    std::string phone;
+};
+```
+
+* `struct`: Creates a **composite data type** (group of variables).
+* `Contact`: The **name** of this custom data type.
+* `{ ... };`: The **body** where you define fields.
+* `std::string name;`: Each `Contact` has a `name` field.
+* `std::string phone;`: Each `Contact` has a `phone` field.
+
+📦 *In memory, a `Contact` holds two string objects, each of which contains a pointer to a dynamically-allocated character array.*
+
+---
+
+## 🔹 Function to Display Contacts
+
+```cpp
+void displayContacts(const std::vector<Contact> & contacts) { }
+```
+
+* `void`: This function returns **nothing**.
+* `displayContacts`: Function name.
+* `const std::vector<Contact> & contacts`:
+
+  * `const`: Promise not to change the data.
+  * `&`: Pass by **reference**, avoiding copying the whole vector.
+  * `std::vector<Contact>`: A list of `Contact` structs.
+
+📦 *The vector exists in memory already — you're just referencing it, not copying.*
+
+---
+
+```cpp
+    std::cout << "\n Contact List: \n";
+```
+
+* `std::cout`: Print to console.
+* `"\n Contact List: \n"`: Newline, then label, then newline.
+
+---
+
+```cpp
+    for (const auto& contact : contacts) {
+```
+
+* `for`: Loop through all elements.
+* `const auto& contact`: For each contact in the vector:
+
+  * `auto`: Deduce type = `Contact`
+  * `&`: Reference — don’t copy
+  * `const`: Don’t modify
+
+💡 *Efficiently iterating without copying.*
+
+---
+
+```cpp
+        std::cout << "-" << contact.name << "(" << contact.phone << ")\n";
+```
+
+* Prints: `-Name(Phone)` per contact.
+
+Example:
+
+```
+-John(1234567890)
+```
+
+---
+
+## 🔹 Main Function Starts Here
+
+```cpp
+int main() {
+```
+
+* `int`: Function returns an integer (0 = success)
+* `main()`: Starting point of the program.
+
+---
+
+```cpp
+    std::vector<Contact> contacts;
+```
+
+* Creates an **empty vector** of type `Contact`.
+* Stored on the **stack**, but its internal data (the array) is on the **heap**.
+
+---
+
+```cpp
+    while (true) {
+```
+
+* Infinite loop to keep the program running until manually broken.
+
+---
+
+```cpp
+        std::cout << "\n[1] Add Contact\n[2] Show All \n[3] Exit\n> ";
+```
+
+* Displays menu to the user.
+
+---
+
+```cpp
+        int choice;
+        std::cin >> choice;
+```
+
+* `choice`: Variable to hold user input.
+* `std::cin`: Reads input from keyboard and stores it in `choice`.
+
+---
+
+## 🔹 If user picks 1 (Add Contact)
+
+```cpp
+        if (choice == 1) {
+            Contact c;
+```
+
+* Declares a `Contact` variable `c` on the **stack**.
+
+---
+
+```cpp
+            std::cout << "Enter name: ";
+            std::cin >> c.name;
+```
+
+* Prompts for name.
+* `std::cin` reads string until the first space.
+
+---
+
+```cpp
+            std::cout << "Enter phone: ";
+            std::cin >> c.phone;
+```
+
+* Same for phone number.
+
+---
+
+```cpp
+            contacts.push_back(c);
+```
+
+* Adds the contact `c` to the end of the vector.
+* If the vector’s **capacity** is full, it:
+
+  * Allocates more memory (usually doubling)
+  * Copies old data into new memory
+  * Frees the old memory
+
+🧠 *Efficient but may cause reallocation + copying.*
+
+---
+
+## 🔹 If user picks 2 (Show All)
+
+```cpp
+        } else if (choice == 2) {
+            displayContacts(contacts);
+```
+
+* Calls your function to print the contact list.
+
+---
+
+## 🔹 If user picks 3 (Exit)
+
+```cpp
+        } else if (choice == 3) {
+            std::cout << "Exiting ContactBook++...\n";
+            break;
+```
+
+* Breaks the `while(true)` loop.
+* Program continues after the loop.
+
+---
+
+## 🔹 Invalid input
+
+```cpp
+        } else {
+            std::cout << "X Invalid Option.\n";
+        }
+    }
+```
+
+* Handles anything not 1, 2, or 3.
+
+---
+
+```cpp
+    return 0;
+```
+
+* Return 0 to the OS = successful execution.
+
+---
+
+## 🧠 What Happens in Memory?
+
+### Stack:
+
+* `contacts` vector object (holds pointer, size, capacity)
+* `choice` variable
+* Temporary `Contact c`
+
+### Heap:
+
+* The actual array of `Contact` objects
+* Inside each `Contact`: two strings (`name`, `phone`)
+* Inside each `string`: dynamic character buffer
+
+## Memory Diagram
+
+### 🧷 Stack Memory
+
+| Address     | Content            | Description                     |
+|-------------|--------------------|---------------------------------|
+| 0x7ffd10f0  | int choice         | Stores user's menu selection    |
+| 0x7ffd10ec  | vector<Contact>    | Holds ptr, size, capacity       |
+| 0x7ffd10e0  | Contact c          | Temporary contact (stack local) |
+|             | └── string name    | Includes heap-allocated buffer  |
+|             | └── string phone   | Includes heap-allocated buffer  |
+
+---
+
+### 📦 Heap Memory
+
+#### std::vector's internal buffer (dynamic array of Contacts)
+| Address     | Content       | Description                        |
+|-------------|---------------|------------------------------------|
+| 0x601000    | Contact[0]    | First contact                      |
+|            | └── name ptr → | Points to "Alice" on heap         |
+|            | └── phone ptr→ | Points to "12345" on heap         |
+| 0x601020    | Contact[1]    | Second contact                     |
+|            | └── name ptr → | Points to "Bob"                   |
+|            | └── phone ptr→ | Points to "67890"                 |
+
+---
+
+#### String buffers (heap-allocated by std::string)
+| Address     | Content       | Description          |
+|-------------|---------------|----------------------|
+| 0x602000    | "Alice"       | char buffer for name |
+| 0x602010    | "12345"       | char buffer for phone|
+| 0x602020    | "Bob"         | char buffer for name |
+| 0x602030    | "67890"       | char buffer for phone|
+```
+
+---
+
+Each `std::string` and `std::vector` hides complexity, but under the hood, it's just:
+
+* pointers to memory
+* bookkeeping (size, capacity)
+* and dynamic allocation.
