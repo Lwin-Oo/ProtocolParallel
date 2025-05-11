@@ -1,0 +1,50 @@
+## 🧪 **Day 1 Practical Exam: Reference Semantics + Vectors + Structs**
+
+---
+
+### ✅ **Problem: ContactBook - Edit & Mirror**
+
+You’re building a Contact Manager.
+Write a program that:
+
+1. Creates a `std::vector<Contact>` with 3 hardcoded contacts.
+2. Creates a **copy** of that vector using `auto`.
+3. Modifies the names in the copied vector to `"ANON"` (loop with `auto` only).
+4. Then loops through the **original** vector (using `auto&`) and appends `" (verified)"` to the names.
+5. Finally, prints both the original and copied contact lists.
+
+---
+
+### 🧱 Required Struct:
+
+```cpp
+struct Contact {
+    std::string name;
+    std::string phone;
+};
+```
+
+---
+
+### 🧠 What This Tests:
+
+* You understand the effect of `auto` vs `auto&`
+* You know how `std::vector` stores objects
+* You can reason about copying and reference-based mutation
+* You can write loops using modern syntax
+
+---
+
+### 🧯 Output Example (yours should match this logic):
+
+```
+Original List:
+Alice (verified) - 123
+Bob (verified) - 456
+Carl (verified) - 789
+
+Copied List:
+ANON - 123
+ANON - 456
+ANON - 789
+```
