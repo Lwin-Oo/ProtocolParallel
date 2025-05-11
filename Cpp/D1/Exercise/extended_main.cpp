@@ -16,7 +16,6 @@ void displayContacts(const std::vector<Contact> & contacts){
 
 }
 
-
 int main(){
     std:: vector<Contact> contacts;
 
