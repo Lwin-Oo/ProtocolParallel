@@ -1,0 +1,64 @@
+## 🧪 **Day 2 Project-Based Test: ContactBook++ V2**
+
+> 👤 You're hired to upgrade a memory-safe CLI contact book used by interns. The old one had memory leaks and bad pointer practices.
+
+### 🎯 **Your Task**
+
+Rebuild it using modern C++ techniques with proper memory management.
+
+---
+
+### ✅ **Requirements**
+
+1. Each contact has:
+
+   * `name` (string)
+   * `phone` (string)
+
+2. Build an app that lets the user:
+
+   * \[1] Add new contact
+   * \[2] Show all contacts
+   * \[3] Exit
+
+3. Store all contact records in a `std::vector`
+
+4. You **must store contacts on the heap**
+
+   * Use smart pointers — but **you choose** which and **why**
+
+5. Use proper RAII principles:
+
+   * Log when each contact is created and destroyed
+   * No manual `delete`
+   * No memory leaks allowed
+
+6. Code must be modular and clear
+
+---
+
+### 🧠 Engineering Evaluation Criteria
+
+| Area                 | Evaluated For                                          |
+| -------------------- | ------------------------------------------------------ |
+| Correctness          | Contact creation, display, and menu loop               |
+| Smart Pointer Choice | Did you pick the right tool (`unique`, `shared`, etc.) |
+| Memory Safety        | No leaks, clear ownership, no raw pointers             |
+| RAII Usage           | Proper ctor/dtor behavior tied to scope                |
+| Readability          | Clear structure, modularity, appropriate const use     |
+
+---
+
+### 🧪 Bonus (for Excellence)
+
+* Show ownership count per contact (if relevant)
+* Allow simulated linking (e.g., `bestFriend` field) with `weak_ptr`
+* Modular function separation (`addContact()`, `displayContacts()`)
+
+---
+
+### 🧨 Constraints
+
+* No raw pointers
+* No global variables
+* You cannot use garbage collection or external memory management libraries
