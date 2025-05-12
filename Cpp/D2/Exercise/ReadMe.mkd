@@ -10,8 +10,8 @@
 | ------------- | ------------------------------------------------------------------------- |
 | RAII          | *Resource Acquisition Is Initialization* — memory tied to object lifetime |
 | `unique_ptr`  | One owner only. Automatically deletes.                                    |
-| `shared_ptr`  | Shared ownership via reference counting. *(Covered Below)*                |
-| `weak_ptr`    | Observer — doesn’t keep memory alive. *(Covered Below)*                   |
+| `shared_ptr`  | Shared ownership via reference counting.                                  |
+| `weak_ptr`    | Observer — doesn’t keep memory alive.                                     |
 | `make_unique` | Safest way to create `unique_ptr`                                         |
 | `make_shared` | Same for `shared_ptr`                                                     |
 
