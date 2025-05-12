@@ -35,7 +35,7 @@ struct Contact {
 
 ---
 
-### 🧯 Output Example (yours should match this logic):
+### 🧯 Output Example:
 
 ```
 Original List:
