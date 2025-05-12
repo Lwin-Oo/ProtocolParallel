@@ -1,0 +1,258 @@
+# 🚀 Day 2: Smart Pointers & RAII
+
+> **Goal:** Never `delete` again. Own memory safely. Understand **RAII**, **unique\_ptr**, **shared\_ptr**, and **weak\_ptr**.
+
+---
+
+## 📘 What We'll Learn
+
+| Concept       | Description                                                               |
+| ------------- | ------------------------------------------------------------------------- |
+| RAII          | *Resource Acquisition Is Initialization* — memory tied to object lifetime |
+| `unique_ptr`  | One owner only. Automatically deletes.                                    |
+| `shared_ptr`  | Shared ownership via reference counting. *(Covered Below)*                |
+| `weak_ptr`    | Observer — doesn’t keep memory alive. *(Covered Below)*                   |
+| `make_unique` | Safest way to create `unique_ptr`                                         |
+| `make_shared` | Same for `shared_ptr`                                                     |
+
+---
+
+## 🛠️ Classic Ownership Problem
+
+```cpp
+std::vector<Contact> contacts;
+
+Contact c;
+c.name = "Alice";
+c.phone = "123";
+contacts.push_back(c);
+```
+
+This stores everything by value — no heap, no smart pointers.
+But what if we want to manage memory on the heap?
+
+---
+
+## ✅ New Approach (Smart Pointer Style)
+
+```cpp
+std::vector<std::unique_ptr<Contact>> contacts;
+
+contacts.push_back(std::make_unique<Contact>("Alice", "123"));
+```
+
+We no longer need `delete`. No memory leaks. Clean and safe heap allocation.
+
+---
+
+# 🧼 Smart Pointer Series
+
+## 🔹 `unique_ptr`
+
+### 🎯 Mission: Build ContactBook++ V2 with `unique_ptr`
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <memory>
+#include <string>
+
+struct Contact {
+    std::string name;
+    std::string phone;
+
+    Contact(const std::string& n, const std::string& p) : name(n), phone(p) {
+        std::cout << "📦 Contact Created: " << name << "\n";
+    }
+
+    ~Contact() {
+        std::cout << "💥 Contact Destroyed: " << name << "\n";
+    }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Contact>> contacts;
+
+    contacts.push_back(std::make_unique<Contact>("Alice", "123"));
+    contacts.push_back(std::make_unique<Contact>("Bob", "456"));
+    contacts.push_back(std::make_unique<Contact>("Carl", "789"));
+
+    std::cout << "📇 Contact List:\n";
+    for (const auto& c : contacts) {
+        std::cout << "- " << c->name << " (" << c->phone << ")\n";
+    }
+
+    return 0;
+}
+```
+
+### 🧠 Summary Table for `unique_ptr`
+
+| Concept            | Meaning                                         |
+| ------------------ | ----------------------------------------------- |
+| `unique_ptr`       | One-owner smart pointer — deletes automatically |
+| `make_unique`      | Safest way to create `unique_ptr` heap objects  |
+| Move semantics     | Transfer ownership with `std::move`, not copy   |
+| RAII               | Lifetime of object = lifetime of its memory     |
+| Constructor / Dtor | Run automatically on create/destroy             |
+| Out of scope       | End of `{}` block — triggers cleanup            |
+
+---
+
+## 🔸 `shared_ptr`
+
+### 🔹 What Is `shared_ptr`
+
+* Multiple owners — shared ownership
+* Reference counted — memory is freed when count reaches zero
+* Safe copyable smart pointer
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+struct Contact {
+    std::string name;
+    Contact(const std::string& n) : name(n) {
+        std::cout << "📦 Created: " << name << "\n";
+    }
+    ~Contact() {
+        std::cout << "💥 Destroyed: " << name << "\n";
+    }
+};
+
+int main() {
+    std::shared_ptr<Contact> p1 = std::make_shared<Contact>("Alice");
+
+    {
+        std::shared_ptr<Contact> p2 = p1;
+        std::cout << "Ref count: " << p1.use_count() << "\n";
+    }
+
+    std::cout << "Ref count: " << p1.use_count() << "\n";
+}
+```
+
+### 🧠 Summary Table for `shared_ptr`
+
+| Concept       | Meaning                                             |
+| ------------- | --------------------------------------------------- |
+| `shared_ptr`  | Shared smart pointer with reference counting        |
+| `make_shared` | Efficient way to allocate + share memory            |
+| Ref count     | Keeps object alive until all owners go out of scope |
+| Safe copy     | Can be copied between functions and modules         |
+| Cleanup       | Happens when last owner is gone                     |
+
+---
+
+## 🔸 `weak_ptr`
+
+### 🔹 What Is `weak_ptr`
+
+* A **non-owning** smart pointer that observes a `shared_ptr`.
+* It does **not affect** the reference count of a `shared_ptr`.
+* Prevents **cyclic references** (e.g. `A -> B -> A`) that would leak memory.
+* You use `weak_ptr` to **safely reference** shared memory **without extending its lifetime**.
+
+```cpp
+#include <iostream>
+#include <memory>
+#include <string>
+
+struct Contact {
+    std::string name;
+    Contact(const std::string& n) : name(n) {
+        std::cout << "📦 Created: " << name << "\n";
+    }
+    ~Contact() {
+        std::cout << "💥 Destroyed: " << name << "\n";
+    }
+};
+
+int main() {
+    std::shared_ptr<Contact> p1 = std::make_shared<Contact>("Alice");
+    std::weak_ptr<Contact> observer = p1;
+
+    std::cout << "Ref count: " << p1.use_count() << "\n";
+
+    if (auto locked = observer.lock()) {
+        std::cout << "Observer sees: " << locked->name << "\n";
+    }
+
+    p1.reset();
+
+    if (auto locked = observer.lock()) {
+        std::cout << "Observer sees: " << locked->name << "\n";
+    } else {
+        std::cout << "Observer sees: [expired]\n";
+    }
+}
+```
+
+### 🧠 Summary Table for `weak_ptr`
+
+| Concept          | Meaning                                                    |
+| ---------------- | ---------------------------------------------------------- |
+| `weak_ptr`       | Observer pointer — doesn’t extend object lifetime          |
+| No ref count inc | Safe to observe shared\_ptr without affecting cleanup      |
+| `.lock()`        | Temporarily promotes to shared\_ptr if still alive         |
+| Best use case    | Avoiding cycles or referencing shared objects non-owningly |
+
+---
+
+## 🧠 Core Idea Recap
+
+| Pointer      | Key Trait                  | Behavior                      |
+| ------------ | -------------------------- | ----------------------------- |
+| `unique_ptr` | Exclusive ownership        | One owner, fast, non-copyable |
+| `shared_ptr` | Shared ownership           | Multiple owners, ref-counted  |
+| `weak_ptr`   | Observer only (non-owning) | Doesn't keep object alive     |
+
+---
+
+## ⚙️ System-Level Impact
+
+### 🔹 Performance
+
+| Pointer Type | Cost per Access | Why                                          |
+| ------------ | --------------- | -------------------------------------------- |
+| `unique_ptr` | ✅ Almost zero   | Just a raw pointer with auto-delete on scope |
+| `shared_ptr` | ❌ Higher        | Atomic ref count operations on copy/move     |
+| `weak_ptr`   | ⚠️ Slight Cost  | Must check/lock shared control block         |
+
+---
+
+### 🔹 Memory Model
+
+* `unique_ptr`: 1 pointer → 1 object
+* `shared_ptr`: 1 control block + object + ref count
+* `weak_ptr`: links to shared\_ptr’s control block without ownership
+
+---
+
+### 🔹 Lifetime Clarity
+
+| Behavior             | `unique_ptr`              | `shared_ptr`                      | `weak_ptr`                      |
+| -------------------- | ------------------------- | --------------------------------- | ------------------------------- |
+| Who owns it?         | Always clear — the holder | Could be many — use `use_count()` | Nobody — observer only          |
+| Lifetime prediction? | ✅ Easy                    | ❌ Hard (shared across modules)    | ✅ Safe — doesn’t prolong object |
+
+---
+
+### 🔹 Thread Safety
+
+* `shared_ptr`: thread-safe ref count
+* `weak_ptr`: thread-safe lock
+* `unique_ptr`: not thread-safe by default
+
+---
+
+## ✅ When to Use
+
+| Scenario                              | Use                            |
+| ------------------------------------- | ------------------------------ |
+| Embedded systems, game loops          | ✅ `unique_ptr`                 |
+| One producer, one consumer            | ✅ `unique_ptr` + `std::move()` |
+| Plugin systems, shared resources      | ✅ `shared_ptr`                 |
+| Observer pattern / parent-child graph | ✅ `shared_ptr` + `weak_ptr`    |
