@@ -2,7 +2,7 @@
 
 > 👤 You're hired to upgrade a memory-safe CLI contact book used by interns. The old one had memory leaks and bad pointer practices.
 
-### 🎯 **Your Task**
+### 🎯 **Task**
 
 Rebuild it using modern C++ techniques with proper memory management.
 

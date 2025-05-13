@@ -1,0 +1,272 @@
+# 🚀 Day 3: STL Containers, Iterators, and Algorithms
+
+---
+
+## 📊 STL Containers: What They Are, How They Work, and When to Use
+
+### 🔹 `std::vector<T>`
+
+> 🔧 **Think:** dynamic array with fast appends and indexed access
+
+#### ✅ Use When:
+
+* We need to **store data in order**
+* We want **random access**: `vec[i]`
+* We expect **more reads than writes**
+* We want **fast iteration**
+
+#### ⚙️ Memory:
+
+* Elements are stored **contiguously in memory**
+* Backed by a dynamic heap array that **doubles in capacity** when full
+* **Amortized O(1)** for `push_back()`, but **O(n)** for insertion elsewhere
+
+#### 🔥 Use Cases:
+
+* Contact list
+* Game entity pool
+* Camera frame buffer
+* Neural layer activations (in ML engines)
+
+---
+
+### 🔹 `std::list<T>` *(comparison only)*
+
+* Doubly linked list
+* Insert/delete in middle: ✅
+* Bad cache locality: ❌
+* Only used in niche cases like memory pools or task queues with frequent splicing
+
+---
+
+### 🔹 `std::map<Key, Value>`
+
+> 🔧 **Think:** red-black tree with sorted keys
+
+#### ✅ Use When:
+
+* You need key-value pairs **in order**
+* You want **logarithmic insertion/search** (O(log n))
+* You require deterministic iteration order
+
+#### ⚙️ Memory:
+
+* Tree nodes on heap (not contiguous)
+* Moderate overhead
+
+#### 🔥 Use Cases:
+
+* Sorted leaderboard
+* Symbol table in compiler
+* Timestamp-based data stream
+
+---
+
+### 🔹 `std::unordered_map<Key, Value>`
+
+> 🔧 **Think:** hash table for key-value
+
+#### ✅ Use When:
+
+* You need **blazing fast lookup** (avg. O(1))
+* Don't care about order
+* Scale across huge datasets
+
+#### ⚙️ Memory:
+
+* Buckets + hash function
+* Higher memory usage for performance
+
+#### 🔥 Use Cases:
+
+* Indexing video frames by ID
+* User sessions in web servers
+* Fast graph adjacency lookups
+
+---
+
+### 🔹 `std::set<T>`
+
+> 🔧 **Think:** auto-sorted container of unique values
+
+#### ✅ Use When:
+
+* You need to **store unique items**
+* Items should stay **automatically sorted**
+
+#### ⚙️ Memory:
+
+* Tree-based
+* Higher overhead than unordered\_set
+
+#### 🔥 Use Cases:
+
+* Leaderboards
+* Deduplicating log tags
+* Live process registry
+
+---
+
+### 🔹 `std::unordered_set<T>`
+
+> 🔧 **Think:** hash-based set for fast uniqueness
+
+#### ✅ Use When:
+
+* You care only about **uniqueness**
+* Order doesn't matter
+
+#### 🔥 Use Cases:
+
+* Memory-efficient user ID tracking
+* Storing visited nodes in BFS/DFS
+* Seen error codes in telemetry
+
+---
+
+### 🔹 `std::pair<T1, T2>`
+
+> 🔧 **Think:** tiny 2-field struct
+
+#### ✅ Use When:
+
+* Returning multiple values
+* Holding two linked values together (key/value, name/score)
+
+---
+
+### 🚀 Performance Recap
+
+| Container       | Indexable | Ordered | Unique | Fast Lookup | Memory   |
+| --------------- | --------- | ------- | ------ | ----------- | -------- |
+| `vector`        | ✅         | ✅       | ❌      | ❌           | Compact  |
+| `map`           | ❌         | ✅       | ✅      | O(log n)    | Moderate |
+| `unordered_map` | ❌         | ❌       | ✅      | ✅ (O(1))    | Higher   |
+| `set`           | ❌         | ✅       | ✅      | O(log n)    | Moderate |
+| `unordered_set` | ❌         | ❌       | ✅      | ✅ (O(1))    | Higher   |
+
+---
+
+# 📍 Iterators in Modern C++
+
+### 🧠 What Are Iterators?
+
+> Safe abstractions over pointers to access containers
+
+### 🔄 Types
+
+| Type                     | Direction | Writable | Container Examples |
+| ------------------------ | --------- | -------- | ------------------ |
+| `iterator`               | →         | Yes      | `vector`, `map`    |
+| `const_iterator`         | →         | No       | Safe read loops    |
+| `reverse_iterator`       | ←         | Yes      | Undo systems, logs |
+| `const_reverse_iterator` | ←         | No       | Scrollback viewers |
+
+---
+
+### 🔹 Manual Iterator Example
+
+```cpp
+std::vector<std::string> names = {"Alice", "Bob", "Carl"};
+for (auto it = names.begin(); it != names.end(); ++it) {
+    std::cout << *it << "\n";
+}
+```
+
+---
+
+### 🔹 Range Loop (Modern Way)
+
+```cpp
+for (const auto& name : names) {
+    std::cout << name << "\n";
+}
+```
+
+---
+
+## 🔢 STL Algorithms (Header: `<algorithm>`, `<numeric>`)
+
+### 🔹 `std::find` / `std::find_if`
+
+```cpp
+std::find(vec.begin(), vec.end(), target);
+std::find_if(vec.begin(), vec.end(), [](int x) { return x > 10; });
+```
+
+* ✅ Linear search
+* ✅ Great for filtering
+
+---
+
+### 🔹 `std::sort`
+
+```cpp
+std::sort(vec.begin(), vec.end());
+std::sort(vec.begin(), vec.end(), [](auto& a, auto& b) {
+    return a.name < b.name;
+});
+```
+
+* Uses intro sort (quick + heap + insertion)
+* Fast and safe
+
+---
+
+### 🔹 `std::count_if`
+
+```cpp
+int count = std::count_if(vec.begin(), vec.end(), [](int x){ return x % 2 == 0; });
+```
+
+* ✅ Useful for analytics
+* ✅ Like map-reduce for counts
+
+---
+
+### 🔹 `std::for_each`
+
+```cpp
+std::for_each(vec.begin(), vec.end(), [](const auto& x){ std::cout << x; });
+```
+
+* ✅ Good for applying operations without writing full loop
+
+---
+
+### 🔹 `std::accumulate` (from `<numeric>`)
+
+```cpp
+int sum = std::accumulate(vec.begin(), vec.end(), 0);
+```
+
+* ✅ Compact reduce pattern
+* ✅ Used for prefix sums, scoring, energy consumption, etc.
+
+---
+
+### 🚀 Performance Consideration
+
+* All STL algorithms use **iterators**, not indexes
+* Works on **any container**, including `list`, `map`, etc.
+* Often **faster and cleaner than raw loops**
+
+---
+
+### 🔥 Real Parallel Computing Use Cases
+
+* `count_if()` to count active threads
+* `find_if()` to identify jobs needing migration
+* `accumulate()` to reduce metrics from cores
+* `unordered_map` for thread-safe state tables (with mutex)
+* `set` for de-duplicating GPU kernels by signature
+
+---
+
+## 📅 Final Summary
+
+> Containers + Iterators + Algorithms = C++'s Modern Power Trio
+
+* Containers manage memory and order
+* Iterators safely walk memory like pro pointers
+* Algorithms let you think in *what*, not *how*
