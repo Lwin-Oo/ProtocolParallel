@@ -1,0 +1,183 @@
+## 🖨️ `displayAllContacts(...)`
+
+```cpp
+void displayAllContacts(const std::map<std::string, std::vector<Contact>>& cityGroups)
+```
+
+* `const std::map<...>&`: passed **by reference** to avoid copying a potentially large map
+* `const`: ensures **read-only**; compiler protects against mutation
+* Map key is `std::string` (city), value is a vector of `Contact` structs
+
+---
+
+### 🔁 Range-Based Loop with Structured Binding
+
+```cpp
+for (const auto& [city, people] : cityGroups)
+```
+
+* `auto& [city, people]`: C++17 **structured binding**
+* Behind the scenes, the compiler deconstructs the `std::pair<const string, vector<Contact>>` from the map
+* `const auto&`: no copies — just refs to the existing entries
+* At memory level: iterators walk a red-black tree (`std::map`) in key order (city names sorted)
+
+---
+
+### 🧭 Inner Loop Over People
+
+```cpp
+for (const auto& person : people)
+```
+
+* `people` is the vector of `Contact` for the current city
+* Iterates in the order contacts were added (unless sorted later)
+* Again, `auto&` avoids copying; just walks pointers in heap-allocated `std::vector<Contact>`
+
+---
+
+### 🖨️ Output Each Contact
+
+```cpp
+std::cout << "- " << person.name << " (" << person.phone << ")\n";
+```
+
+* `person` is a reference to the `Contact` object
+* Each field is printed — at CPU level this does:
+
+  1. Lookup vtable for `operator<<`
+  2. Traverse heap memory for `std::string`'s buffer
+  3. Push bytes to standard output (usually via syscall)
+
+---
+
+## 📊 `sortContactsByName(...)`
+
+```cpp
+void sortContactsByName(std::map<std::string, std::vector<Contact>>& cityGroups)
+```
+
+* No `const` here — this **modifies** the map contents
+* Map still passed by reference to avoid copying (large data)
+
+---
+
+### 🔁 Loop Over Cities
+
+```cpp
+for (auto& [city, people] : cityGroups)
+```
+
+* Again, structured binding
+* `auto&` gives mutable access to both city name (not used here) and vector of people
+* Each `people` vector is heap-allocated
+
+---
+
+### 🔀 Sort by Lambda
+
+```cpp
+std::sort(people.begin(), people.end(), [](const Contact& a, const Contact& b) {
+    return a.name < b.name;
+});
+```
+
+* `std::sort(...)` is a **hybrid** algorithm (introsort):
+
+  * Starts with quicksort
+  * Switches to heapsort if recursion gets deep
+  * Finishes with insertion sort for small chunks
+* Sort operates **in-place**, modifying memory inside the `vector`
+* `begin()` / `end()` give raw iterators
+* `[](const Contact& a, const Contact& b)` is a **lambda function** (anonymous comparator):
+
+  * Compares by `.name`
+  * Safe because it’s read-only
+
+🧠 **At memory level**:
+
+* Swap operations move entire `Contact` objects (shallow copies — just strings which manage their own memory)
+* Heap memory layout is contiguous, enabling fast comparisons
+
+---
+
+## 🔍 `searchCity(...)`
+
+```cpp
+void searchCity(std::map<std::string, std::vector<Contact>>& cityGroups)
+```
+
+* No const here because we technically call `.at()` (read-only), but access is safe and local
+* If desired, could mark it `const &`
+
+---
+
+### 🧾 Input and Conditional Logic
+
+```cpp
+std::string searchCity;
+std::cin >> searchCity;
+```
+
+* `std::cin`: reads directly from input stream buffer (keyboard input, low-level I/O under the hood)
+
+```cpp
+if (cityGroups.count(searchCity))
+```
+
+* `count()` returns 0 or 1 in `std::map` (only 1 key allowed)
+* `O(log n)` lookup via red-black tree traversal (left/right node search)
+
+---
+
+### 🖨️ Found City
+
+```cpp
+for (const auto& person : cityGroups.at(searchCity))
+```
+
+* `at()` retrieves the vector by key
+* `at()` throws exception if not found (safe here due to prior `count()`)
+
+---
+
+## 🔢 `countCity(...)`
+
+```cpp
+void countCity(const std::map<std::string, std::vector<Contact>>& cityGroups)
+```
+
+* Full read-only function
+* Can process millions of keys efficiently with `O(log n)` lookup
+
+---
+
+### 🤖 Conditional with Ternary
+
+```cpp
+int count = cityGroups.count(targetCity) ? cityGroups.at(targetCity).size() : 0;
+```
+
+* `size()` is O(1) on vector — it just reads the `.size_` field inside the vector object
+* If city not found, returns 0
+* Safer than accessing `at()` directly without check
+
+---
+
+### 🔬 Memory + CPU Notes
+
+| Operation       | Memory Behavior                   | CPU View                                 |
+| --------------- | --------------------------------- | ---------------------------------------- |
+| `map` traversal | Binary tree pointer jumps on heap | Branch-heavy, not cache-friendly         |
+| `vector` loop   | Contiguous buffer read            | Cache-friendly, sequential access        |
+| `sort`          | In-place rearrangement in vector  | High CPU load, efficient comparison path |
+| `cout` printing | Heap → stdout pipe (syscall)      | Costly I/O, often buffered               |
+| `.at()`         | Safe accessor with bounds check   | Throws if key not found (in debug)       |
+
+---
+
+### ✅ Recap: STL in Parallel Computing Context
+
+* `map` → great for batching by threads (city = partition key)
+* `vector` → cache-friendly iteration for CPU kernels
+* `sort` → pre-processing for stable task queues
+* `find`, `count`, `at()` → thread-safe if container isn't mutated

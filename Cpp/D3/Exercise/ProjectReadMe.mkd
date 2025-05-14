@@ -1,0 +1,174 @@
+# 🛠️ **Project: Contact Group Manager++ (ContactBook++ V3)**
+
+### 🎯 Goal:
+
+We’ll build a system that:
+
+* Stores contacts dynamically
+* Groups them by **city**
+* Allows fast **lookup**
+* Supports duplicate **name or phone** but **unique person+city**
+* Uses STL containers, iterators, and algorithms from Day 3
+
+---
+
+## 🔧 Features to Implement
+
+1. Add new contact: name, phone, city
+2. Display all contacts grouped by city (alphabetically)
+3. Search contacts in a city
+4. Count how many people live in a specific city
+5. Sort contacts within each city alphabetically by name
+
+---
+
+## 🔩 STL Concepts You’ll Use
+
+| Feature                 | STL Tool                                      | Why Used                          |
+| ----------------------- | --------------------------------------------- | --------------------------------- |
+| Group contacts by city  | `std::map<std::string, std::vector<Contact>>` | Auto-sorted groups by city        |
+| Store people per city   | `std::vector<Contact>`                        | Dynamic, ordered list             |
+| Ensure unique entries   | `std::set<std::pair<name, city>>`             | Avoid duplicates                  |
+| Display grouped results | `auto&`, iterators                            | Efficient memory-safe access      |
+| Sort contacts per city  | `std::sort`                                   | Sort names inside each city       |
+| Count people in a city  | `std::count_if` or `.size()`                  | Get how many contacts in one city |
+| Search in city          | `std::find_if`                                | Condition-based search            |
+
+---
+
+## 🧱 Step-by-Step Construction
+
+---
+
+### 🧩 Step 1: Contact Struct
+
+```cpp
+struct Contact {
+    std::string name;
+    std::string phone;
+    std::string city;
+};
+```
+
+We group by `city`, and `name` + `phone` is the identity.
+
+---
+
+### 🧩 Step 2: Data Structures
+
+```cpp
+std::map<std::string, std::vector<Contact>> cityGroups;
+std::set<std::pair<std::string, std::string>> seen;  // (name, city)
+```
+
+* `cityGroups` groups people by city
+* `seen` helps prevent duplicate entries (name, city pair)
+
+---
+
+### 🧩 Step 3: Adding a Contact
+
+```cpp
+std::string name, phone, city;
+std::cout << "Enter name: "; std::cin >> name;
+std::cout << "Enter phone: "; std::cin >> phone;
+std::cout << "Enter city: "; std::cin >> city;
+
+if (seen.count({name, city}) == 0) {
+    Contact c{name, phone, city};
+    cityGroups[city].push_back(c);
+    seen.insert({name, city});
+    std::cout << "✅ Contact added!\n";
+} else {
+    std::cout << "⚠️ Duplicate entry. Skipped.\n";
+}
+```
+
+* Lookup in `seen` = fast O(log n)
+* `map` auto-creates vector if `city` doesn't exist
+
+---
+
+### 🧩 Step 4: Show All Contacts (Grouped)
+
+```cpp
+for (const auto& [city, people] : cityGroups) {
+    std::cout << "\n🏙️ " << city << ":\n";
+    for (const auto& person : people) {
+        std::cout << "- " << person.name << " (" << person.phone << ")\n";
+    }
+}
+```
+
+* Structured output
+* Range-for on `map` + `vector`
+
+---
+
+### 🧩 Step 5: Sort People by Name in Each City
+
+```cpp
+for (auto& [city, people] : cityGroups) {
+    std::sort(people.begin(), people.end(), [](const Contact& a, const Contact& b) {
+        return a.name < b.name;
+    });
+}
+```
+
+* Sort only affects the `vector` under each city
+* `lambda` provides custom comparator
+
+---
+
+### 🧩 Step 6: Search People in a City
+
+```cpp
+std::string searchCity;
+std::cout << "Enter city to search: ";
+std::cin >> searchCity;
+
+if (cityGroups.count(searchCity)) {
+    std::cout << "\n🔎 People in " << searchCity << ":\n";
+    for (const auto& person : cityGroups[searchCity]) {
+        std::cout << "- " << person.name << " (" << person.phone << ")\n";
+    }
+} else {
+    std::cout << "⚠️ No contacts in this city.\n";
+}
+```
+
+---
+
+### 🧩 Step 7: Count People in a City
+
+```cpp
+std::string targetCity;
+std::cout << "Count in city: ";
+std::cin >> targetCity;
+
+int count = cityGroups.count(targetCity) ? cityGroups[targetCity].size() : 0;
+std::cout << "Total contacts in " << targetCity << ": " << count << "\n";
+```
+
+---
+
+## 🔁 Menu-Driven Loop
+
+Wrap the above into:
+
+```cpp
+while (true) {
+    std::cout << "\n[1] Add Contact\n[2] Show All\n[3] Sort by Name\n[4] Search City\n[5] Count City\n[6] Exit\n> ";
+    int choice;
+    std::cin >> choice;
+    // switch() or if-else chain
+}
+```
+
+---
+
+## 🧠 Final Notes (Parallel Relevance)
+
+* `unordered_map` is faster but `map` gives sorted city order
+* STL is safe and fast — use it to build non-blocking or batch-parallel processing pipelines
+* We’ll later replace some containers with thread-safe versions or atomic primitives when scaling to concurrency
