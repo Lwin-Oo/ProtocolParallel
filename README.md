@@ -71,11 +71,9 @@ ProtocolParallel/
 ├── D4/                          # Functional refactoring using STL algorithms & lambdas
 ├── D5/                          # Memory placement, stack/heap simulations
 ├── Lunr/                        # Real AI productivity enforcement app
-│   ├── ActivityMonitor.cpp
-│   ├── GoalTracker.cpp
-│   ├── Restrictor.cpp
-│   ├── LunrCore.hpp / .cpp
-│   └── README.md
+│   ├── App/
+│   ├── Docs/
+│   └── README.mkd
 └── README.md
 ```
 

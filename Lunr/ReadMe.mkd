@@ -1,0 +1,118 @@
+# 🚀 Project Spec: Lunr — AI Productivity Agent for macOS
+
+## 🎯 Goal
+
+Build a macOS-native AI agent that monitors the user's digital behavior and enforces a personalized productivity discipline system based on their goals, addictions, and consistency.
+
+## 🔧 System Overview
+
+Lunr will operate silently in the background, gathering user data, analyzing behavior, and enforcing constraints.
+
+---
+
+## 🧠 Phase 1: Behavior Observation Engine
+
+### 1.1 Track Usage Categories
+
+* **Entertainment:** Detect and log time spent on:
+
+  * Video platforms (YouTube, HBO Max, Netflix)
+  * Social media (Twitter, Instagram)
+  * Video games (Steam, emulators)
+* **Productivity:**
+
+  * GitHub commits / VSCode / Terminal time
+  * Writing apps (Notion, Obsidian, etc.)
+  * Research apps (PDFs, browser)
+
+### 1.2 User Intent Logging
+
+Prompt user on Day 1:
+
+* What is your goal this month?
+
+  * (Examples: build an app, publish an article, study for exam)
+* How much time do you want to spend per week on this?
+
+### 1.3 Medium Establishment
+
+Track actual hours:
+
+* Time on goal-oriented apps
+* Time on entertainment
+
+Generate this summary:
+
+```text
+Weekly Goal: 10 hrs of GitHub activity
+Actual: 8 hrs (↓2 hrs)
+Entertainment: 24 hrs on HBO Max (↑4 hrs from baseline)
+```
+
+---
+
+## 🔒 Phase 2: Reward / Punishment Engine
+
+### 2.1 Punishment Logic (Week 1 Mode)
+
+If below productivity goal:
+
+* Restrict entertainment apps (via Screen Time / process blocking):
+
+  * Reduce HBO Max from 40 hrs → 20 hrs
+  * Block access during peak study hours
+* Alerts/Warnings:
+
+  * Popups: "Access Denied — meet your Git goal first."
+  * Notifications from Lunr AI
+
+### 2.2 Reward (Deferred)
+
+Will implement in later phase after punishment logic is proven effective.
+
+---
+
+## ⚙️ Technical Requirements
+
+* **Language:** Modern C++ (macOS backend)
+* **Platform:** macOS App
+* **Monitoring:**
+
+  * App usage via Accessibility APIs
+  * GitHub API for commits
+  * ScreenTime / Activity Monitor integration
+* **UI:** Simple dashboard to:
+
+  * Set goals
+  * View usage heatmaps
+  * Adjust permissions manually (override lockout)
+
+---
+
+## 🔐 Security / Ethics
+
+* All data processed locally
+* User has control over logs and deletion
+* Lunr operates as an agent, not a surveillance app
+
+---
+
+## 📅 Roadmap
+
+| Phase | Milestone             | Description                                |
+| ----- | --------------------- | ------------------------------------------ |
+| 1     | Behavior Observer MVP | Tracks apps and logs activity              |
+| 2     | Weekly Analyzer       | Generates weekly usage reports             |
+| 3     | Lockout Enforcer      | Restricts apps if productivity drops       |
+| 4     | Rewards System        | Gamified system for maintaining discipline |
+
+---
+
+## 🔄 Parallelism / C++ Focus
+
+Use Modern C++ to:
+
+* Spawn parallel monitoring threads per app category
+* Use RAII for resource monitoring
+* Track and dispatch tasks to async I/O monitor
+* Use STL containers + algorithms to efficiently sort and log time blocks

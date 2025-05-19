@@ -1,0 +1,125 @@
+# 🧠 Lunr System Design Document
+
+## 🌟 Mission
+
+Create an intelligent macOS-native productivity agent using Modern C++ that:
+
+* Monitors user behavior (entertainment vs productivity)
+* Understands goals and consistency
+* Automatically rewards or punishes user based on behavioral trends
+
+---
+
+## 🧹 Phase 1: Behavior Observation Engine — Rationale and Internals
+
+### 📊 Why This Phase First?
+
+Behavior tracking is the foundation of the Lunr system. Before we can enforce restrictions or analyze trends, we must:
+
+* **Accurately observe user behavior** in real-time
+* **Categorize** application usage
+* **Log** sessions into meaningful time segments
+
+This phase ensures we have high-fidelity behavioral data upon which future logic (analytics, rewards/punishments) depends.
+
+---
+
+### 🛠️ How It Works
+
+#### ✅ App Usage Loop (Real-time Tracker)
+
+A background thread polls the current foreground app every X seconds using macOS APIs (bridged to C++):
+
+* `NSWorkspace.shared.frontmostApplication` provides the active app
+* This is mapped to a category via a predefined `std::unordered_map<std::string, UsageCategory>`
+* For each second the app is active, the thread increments a time counter in an STL map:
+
+```cpp
+std::unordered_map<std::string, int> categoryUsage;
+categoryUsage["Entertainment"] += 1; // every second
+```
+
+#### 💡 Per-Category Threads
+
+To reduce contention and boost parallelism:
+
+* Each major category (e.g., entertainment, productivity) can be tracked on **separate threads**
+* These threads synchronize with a shared `std::mutex` or atomic values
+* Optionally, `std::async` or `std::jthread` can wrap periodic app polling for safety and performance
+
+#### 🗂 Data Structure Rationale
+
+* **`std::unordered_map<std::string, int>`**: fast lookups by category name
+* **`std::vector<AppSample>`**: logs raw app switch events with timestamp
+
+Each record looks like:
+
+```cpp
+struct AppSample {
+    std::string appName;
+    std::string category;
+    std::chrono::system_clock::time_point start;
+    std::chrono::seconds duration;
+};
+```
+
+#### 📊 GitHub Activity Tracking
+
+Optional thread polls GitHub API once/hour:
+
+* Counts commits, PRs, or issue comments
+* Appends result to weekly contribution tracker
+* Stored locally via `StorageManager`
+
+#### 📆 Daily Sync
+
+At end-of-day:
+
+* Consolidate logs
+* Dump JSON to disk: `~/Library/Application Support/Lunr/logs/YYYY-MM-DD.json`
+
+---
+
+### 🔧 Why These Modules for Phase 1?
+
+#### 1. `BehaviorObserver`
+
+* *Why:* Real-time data collection is core to every future feature
+* *Benefit:* Modular and thread-safe, this class operates independently of UI or analytics
+
+#### 2. `UserGoalManager`
+
+* *Why:* Goal data must be available from day one to track deviation
+* *Benefit:* Simple and stable config, enables accurate weekly summaries
+
+#### 3. `StorageManager`
+
+* *Why:* Durable session data is critical for reboots and long-term learning
+* *Benefit:* Encapsulates file I/O from core logic, ensures safe shutdown
+
+---
+
+## 🧩 App Internal Architecture
+
+### 🚄 Thread Model
+
+| Thread Name      | Role                               | Notes                       |
+| ---------------- | ---------------------------------- | --------------------------- |
+| `Main`           | UI, event loop                     | Goal entry + dashboard      |
+| `ObserverThread` | App usage tracker (foreground app) | Per-second polling          |
+| `GitHubThread`   | Pull commit count from GitHub      | Optional, OAuth-token gated |
+| `FlushThread`    | End-of-day storage writer          | Syncs every 24 hours        |
+
+All threads will signal safe shutdown via atomic flags or RAII guards to ensure stability.
+
+---
+
+## 🔹 Summary
+
+Phase 1 builds the **backbone of the system** by cleanly observing and logging behavior. Its goal is to:
+
+* Keep modules independent and testable
+* Use Modern C++ to build safe and concurrent threads
+* Ensure user behavior data is reliable and local
+
+Once this phase is complete, we'll move into Phase 2: **Session Analyzer + Punishment Engine**.
