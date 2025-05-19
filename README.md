@@ -65,12 +65,12 @@ Each day includes:
 
 ```bash
 ProtocolParallel/
-├── Day1_ContactBook/              # Basic vector + struct + I/O based project
-├── Day2_SmartPointers/            # Memory-safe ContactBook using unique/shared pointers
-├── Day3_ContainersAndIters/       # Contact grouping with maps, sets, and iterator logic
-├── Day4_AlgorithmsAndLambdas/     # Functional refactoring using STL algorithms & lambdas
-├── Day5_MemoryLayout/             # Memory placement, stack/heap simulations
-├── LunrAI/                        # Real AI productivity enforcement app
+├── D1/                          # Basic vector + struct + I/O based project
+├── D2/                          # Memory-safe ContactBook using unique/shared pointers
+├── D3/                          # Contact grouping with maps, sets, and iterator logic
+├── D4/                          # Functional refactoring using STL algorithms & lambdas
+├── D5/                          # Memory placement, stack/heap simulations
+├── Lunr/                        # Real AI productivity enforcement app
 │   ├── ActivityMonitor.cpp
 │   ├── GoalTracker.cpp
 │   ├── Restrictor.cpp
