@@ -1,0 +1,186 @@
+# 🚀 Day 4: Lambdas, Function Objects, and STL Algorithms in Modern C++
+
+> **Goal:** Master the expressive, high-performance tools of Modern C++ using lambdas, functors, and STL algorithms. These tools pave the way toward clean code, flexible logic, and parallel computing.
+
+---
+
+## 🏠 Part 1: **Lambdas** (Anonymous Inline Functions)
+
+### 🔍 What is a Lambda?
+
+A lambda is an **anonymous function** you write inline, usually to pass behavior into an algorithm.
+
+```cpp
+[](int a, int b) { return a + b; }  // no name, but it's a function
+```
+
+You can assign it to a variable:
+
+```cpp
+auto add = [](int a, int b) { return a + b; };
+std::cout << add(3, 4);  // prints 7
+```
+
+---
+
+### 📈 Why Use Lambdas?
+
+* Compact and readable
+* No need to declare full function
+* Can capture local variables (state)
+* Can be passed directly into STL algorithms
+
+---
+
+### ⚖️ Lambda Syntax
+
+```cpp
+[capture](params) -> return_type { body }
+```
+
+* `capture`: list of variables to bring in
+* `params`: function parameters
+* `return_type`: usually inferred
+
+---
+
+### 🛠️ Lambda Capture
+
+```cpp
+int x = 5;
+auto f = [x](int y) { return x + y; };  // captures x by value
+```
+
+| Syntax | Meaning                         |
+| ------ | ------------------------------- |
+| `[]`   | Capture nothing                 |
+| `[=]`  | Capture everything by value     |
+| `[&]`  | Capture everything by reference |
+| `[x]`  | Capture x by value              |
+| `[&x]` | Capture x by reference          |
+
+---
+
+## 🏠 Part 2: **Functors** (Function Objects)
+
+### 💪 What is a Functor?
+
+A functor is a **struct or class with `operator()` overloaded**, making it behave like a function.
+
+```cpp
+struct Multiply {
+    int operator()(int a, int b) const {
+        return a * b;
+    }
+};
+
+Multiply mul;
+std::cout << mul(3, 4);  // prints 12
+```
+
+Functors are often used in STL and can be stateful.
+
+---
+
+## 📄 Part 3: `std::function`
+
+### ✨ What is `std::function`?
+
+A **polymorphic function wrapper** — lets you store any callable: lambdas, function pointers, or functors.
+
+```cpp
+#include <functional>
+std::function<int(int)> square = [](int x) { return x * x; };
+std::cout << square(5); // 25
+```
+
+---
+
+## ⚖️ Part 4: STL Algorithms
+
+STL algorithms are functions that operate on containers via iterators.
+
+### 🔄 Most Useful Algorithms
+
+| Algorithm        | Use Case                         |
+| ---------------- | -------------------------------- |
+| `std::sort`      | Sort elements                    |
+| `std::find_if`   | Find element matching predicate  |
+| `std::count_if`  | Count elements meeting condition |
+| `std::transform` | Map elements through a function  |
+| `std::for_each`  | Apply function to every element  |
+
+---
+
+### 🔄 Example: Sorting Contacts
+
+```cpp
+std::sort(contacts.begin(), contacts.end(), [](const Contact& a, const Contact& b){
+    return a.name < b.name;
+});
+```
+
+This lambda acts as the custom comparator.
+
+---
+
+### ☑️ Example: Count All in City
+
+```cpp
+int count = std::count_if(contacts.begin(), contacts.end(), [](const Contact& c){
+    return c.city == "Madison";
+});
+```
+
+---
+
+### ✅ Example: Uppercase Names
+
+```cpp
+std::transform(names.begin(), names.end(), names.begin(), [](std::string& s) {
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+    return s;
+});
+```
+
+---
+
+## 🌟 Part 5: Parallel STL (C++17)
+
+### ⚡ Make Algorithms Run on Multiple Cores
+
+```cpp
+#include <execution>
+std::sort(std::execution::par, data.begin(), data.end());
+```
+
+| Policy      | Description           |
+| ----------- | --------------------- |
+| `seq`       | Sequential (default)  |
+| `par`       | Parallel (multi-core) |
+| `par_unseq` | Parallel + vectorized |
+
+Works on:
+
+* `sort`
+* `for_each`
+* `transform`
+* `reduce`
+
+---
+
+## 📊 Summary Table
+
+| Concept         | Description                                  |
+| --------------- | -------------------------------------------- |
+| Lambda          | Inline anonymous function                    |
+| Functor         | Custom type with `operator()`                |
+| `std::function` | Polymorphic callable storage                 |
+| STL Algorithm   | Generic tools for operating on containers    |
+| Parallel STL    | Execution policies for multicore performance |
+
+---
+
+## 🧠 Final Thoughts
+
+This is where Modern C++ becomes clean, expressive, and powerful. Lambdas and STL algorithms allow logic to flow directly where it's needed, and functors open the door to customizable systems, like plug-ins, kernel launchers, and signal processors.
